@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/constantine/PycharmProjects/tf_playground/checkpoints/test/model.ckpt"
+all_model_checkpoint_paths: "/home/constantine/PycharmProjects/tf_playground/checkpoints/test/model.ckpt"
