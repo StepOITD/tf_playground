@@ -3,6 +3,17 @@ from pylab import *
 from scipy.cluster.vq import *
 from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np
+from PCV.tools import imtools
+import pickle
+from scipy import *
+from pylab import *
+from PIL import Image
+from scipy.cluster.vq import *
+from PCV.tools import pca
+
+import DeepKMeans.tools as tools
+
+from tensorflow.examples.tutorials.mnist import input_data
 
 def gen_matrix(code, centroids):
     matrix = [centroids[i] for i in code]
@@ -58,12 +69,23 @@ def inference(mnist):
     h_conv4 = tf.nn.relu(conv2d(h_pool3, W_conv4) + b_conv4)
     h_pool4 = max_pool_2x2(h_conv4)
 
+    h_pool4_flat = tf.reshape(h_pool2, [-1, 2*2*256])
+
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
         xs = mnist.test.images
         ys = mnist.test.labels
-        extract_features = sess.run(h_pool4, feed_dict={x: xs})
+        extract_features = sess.run(h_pool4_flat, feed_dict={x: xs})
         print(extract_features.shape)
+        V, S, immean = pca.pca(extract_features)
+        immean = immean.flatten()
+        imnbr = 10000
+        projected = array([dot(V[:32], extract_features[i] - immean) for i in range(imnbr)])
+        centroids, distortion = kmeans(projected, 15)
+
+        code, distance = vq(projected, centroids)
+
+        tools.calculate_acc(code, ys, 10)
 
     return extract_features
 
